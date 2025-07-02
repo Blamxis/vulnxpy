@@ -1,4 +1,5 @@
 import requests
+import urllib.parse
 from colorama import Fore, Style
 
 def scan_xss(url, payload_file):
@@ -69,3 +70,33 @@ def scan_sqli(url, payload_file):
 
         except Exception as e:
             print(f"{Fore.MAGENTA}[!] Erreur avec {payload}: {e}{Style.RESET_ALL}")
+
+def scan_xss_post(url, payload_file, data_template):
+    print(f"{Fore.CYAN}[*] Scan XSS POST sur {url}{Style.RESET_ALL}")
+
+    with open(payload_file, "r") as f:
+        payloads = [line.strip() for line in f if line.strip()]
+
+    for payload in payloads:
+        try:
+            # Remplacer PAYLOAD par le payload actuel dans le corps de la requête
+            raw_data = data_template.replace("PAYLOAD", payload)
+
+            # Convertir le corps POST en dictionnaire
+            post_data = dict(urllib.parse.parse_qsl(raw_data))
+
+            # Envoyer la requête POST
+            res = requests.post(url, data=post_data, timeout=5)
+
+            print(f"\n{Fore.YELLOW}[*] Payload testé : {payload}{Style.RESET_ALL}")
+            print(f"    ➤ Statut HTTP : {res.status_code}")
+            print(f"    ➤ Longueur réponse : {len(res.text)} caractères")
+
+            if payload in res.text:
+                print(f"{Fore.RED}[VULNÉRABLE] Payload reflété dans la réponse !{Style.RESET_ALL}")
+            else:
+                print(f"{Fore.GREEN}[OK] Payload non trouvé dans la réponse{Style.RESET_ALL}")
+
+        except Exception as e:
+            print(f"{Fore.MAGENTA}[!] Erreur avec {payload}: {e}{Style.RESET_ALL}")
+
