@@ -33,3 +33,39 @@ def scan_xss(url, payload_file):
 
         except Exception as e:
             print(f"{Fore.MAGENTA}[!] Erreur : {e}{Style.RESET_ALL}")
+
+def scan_sqli(url, payload_file):
+    print(f"{Fore.CYAN}[*] Scan SQLi sur {url}{Style.RESET_ALL}")
+
+    error_signatures = [
+        "you have an error in your sql syntax",
+        "mysql_fetch",
+        "mysql_num_rows()",
+        "ORA-01756",
+        "sqlite error",
+        "unclosed quotation mark",
+        "syntax error"
+    ]
+
+    with open(payload_file, "r") as f:
+        payloads = [line.strip() for line in f if line.strip()]
+
+    for payload in payloads:
+        try:
+            full_url = url + payload
+            res = requests.get(full_url, timeout=5)
+
+            content_lower = res.text.lower()
+            found_error = any(sig in content_lower for sig in error_signatures)
+
+            print(f"\n{Fore.YELLOW}[*] Payload testé : {payload}{Style.RESET_ALL}")
+            print(f"    ➤ Statut HTTP : {res.status_code}")
+            print(f"    ➤ Longueur de réponse : {len(res.text)} caractères")
+
+            if found_error:
+                print(f"{Fore.RED}[VULNÉRABLE] Erreur SQL détectée avec payload : {payload}{Style.RESET_ALL}")
+            else:
+                print(f"{Fore.GREEN}[OK] Pas d'erreur détectée pour ce payload{Style.RESET_ALL}")
+
+        except Exception as e:
+            print(f"{Fore.MAGENTA}[!] Erreur avec {payload}: {e}{Style.RESET_ALL}")
