@@ -1,0 +1,8 @@
+<script>alert(1)</script>
+"><img src=x onerror=alert(1)>
+'"><svg/onload=alert(1)>
+"><script>confirm(1)</script>
+"><test>
+<script nonce="abc">1</script>
+<svg><desc>X</desc></svg>
+"><input type=text value='x'>
